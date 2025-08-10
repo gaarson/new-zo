@@ -1,0 +1,65 @@
+services:
+  auth:
+    build:
+      context: ..
+      dockerfile: ./auth/Dockerfile
+      args: 
+        - APP_ENV=production
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    env_file:
+      - ./.database.dev.env
+      - ./.config.dev.env
+    depends_on:
+      - postgres-auth
+    profiles:
+      - auth
+    volumes: 
+      - ./:/app/auth
+      - ../lib:/app/lib
+
+  postgres-auth:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
+      - postgres_auth_data:/var/lib/postgresql/data
+    env_file:
+      - ./.database.dev.env
+    profiles:
+      - auth
+
+  auth-test:
+    build:
+      context: ..
+      dockerfile: ./auth/Dockerfile
+      args: 
+        - APP_ENV=dev
+    # Не публикуем порты, так как будем общаться внутри Docker-сети
+    env_file:
+      - ./.database.test.env # Используем тестовые креды
+      - ./.config.test.env
+    depends_on:
+      - postgres-auth-test
+    profiles:
+      - auth-test # Новый профиль для тестов
+    volumes:
+      - ./:/app/auth
+      - ../lib:/app/lib
+
+  postgres-auth-test:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
+      - postgres_auth_test_data:/var/lib/postgresql/data
+    env_file:
+      - ./.database.test.env # Используем тестовые креды
+    profiles:
+      - auth-test # Новый профиль для тестовckkkkk
+
+volumes:
+  postgres_auth_data:
+  postgres_auth_test_data: # Отдельный volume для тестовой БД
+

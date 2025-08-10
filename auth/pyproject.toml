@@ -1,0 +1,21 @@
+[project]
+name = "auth-service-zodiak"
+version = "0.0.01"
+description = "Authorization service for zodiak project"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "psycopg2-binary",
+    "bcrypt",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-watch",
+    "httpx",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["auth*", "lib*"]
