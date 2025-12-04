@@ -5,8 +5,10 @@ description = "Authorization service for zodiak project"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
+    "passlib>=1.7.4",
     "psycopg2-binary",
-    "bcrypt",
+    "python-jose[cryptography]",
+    "python-multipart", 
 ]
 
 [project.optional-dependencies]

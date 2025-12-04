@@ -7,5 +7,6 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    roles VARCHAR(50)[] DEFAULT ARRAY['user']::VARCHAR(50)[],
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -10,13 +10,15 @@ WORKDIR /app
 RUN pip install --upgrade pip
 
 COPY ./auth/pytest.ini .
-COPY ./auth/pyproject.toml .
 COPY ./auth/main.py .
 
+COPY ./auth/pyproject.toml .
+RUN pip uninstall -y bcrypt || true
+
 RUN if [ "$APP_ENV" = "dev" ] ; then \
-        pip install .[dev] ; \
+        pip install --no-cache-dir .[dev] ; \
     else \
-        pip install . ; \
+        pip install --no-cache-dir . ; \
     fi
 
 COPY ./lib/ ./lib/

@@ -1,5 +1,6 @@
 import os
 import logging
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from psycopg2.pool import ThreadedConnectionPool

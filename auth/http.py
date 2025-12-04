@@ -1,12 +1,17 @@
 import logging
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import SecretStr, BaseModel
 
 from .repository import PostgresAuthRepository
-from .auth import get_user_by_username, register_new_user
+from .auth import get_user_by_username, register_new_user, authenticate_user, create_access_token
 from .domain import UserRepository, User, UserAlreadyExistsError
 
 logger = logging.getLogger(__name__);
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
 
 class UserResponse(BaseModel):
     id: int
@@ -15,6 +20,7 @@ class UserResponse(BaseModel):
 class UserCreate(BaseModel):
     username: str
     password: str
+
 
 router = APIRouter(
     prefix="/auth",
@@ -68,3 +74,29 @@ def get_user_endpoint(
     
     raise HTTPException(status_code=404, detail="User not found")
 
+@router.post("/token", response_model=TokenResponse)
+def login_for_access_token(
+    user_repo: UserRepository = Depends(get_repository),
+    form_data: OAuth2PasswordRequestForm = Depends() 
+):
+    user = authenticate_user(
+        username=form_data.username, 
+        password=form_data.password, 
+        user_repo=user_repo
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token_data = {
+        "sub": str(user.id),
+        "roles": user.roles
+    }
+
+    access_token = create_access_token(data=access_token_data)
+
+    return {"access_token": access_token, "token_type": "bearer"}

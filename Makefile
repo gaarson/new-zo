@@ -23,10 +23,12 @@ down: ## Останавливает и удаляет dev-окружение д�
 
 down-all: ## Останавливает и удаляет все контейнеры
 	@echo " останавливаем и удаляем все..."
-	docker compose $(ALL_PROFILES) down --remove-orphans -v
+	docker compose $(ALL_PROFILES) $(ALL_TEST_PROFILES) down --remove-orphans -v
 
 test: ## Запускает тесты. Пример: make test T_ARGS="-k create_user"
 	@echo "🧪 Запускаем тесты для [$(SERVICE)] с аргументами [$(T_ARGS)]..."
+	@docker image rm new-zodiak-$(SERVICE)-test > /dev/null 2>&1 || true
+
 	docker compose --profile $(SERVICE)-test up -d --build
 	@echo "   - Ожидание запуска БД..."
 	@sleep 5
